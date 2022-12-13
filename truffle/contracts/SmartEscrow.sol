@@ -4,7 +4,11 @@ pragma solidity >=0.4.22 <0.9.0;
 import "../node_modules/@openzeppelin/contracts/access/Ownable.sol";
 import "../node_modules/@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "../node_modules/@openzeppelin/contracts/utils/escrow/RefundEscrow.sol";
-
+/**
+* スマートエスクロー
+* openzeppelinのescrow.solを継承しようと思っていたが、payee対象が複数であることから
+* 新しくコントラクトを作ることにした。
+*/
 contract SmartEscrow is Ownable{
     using SafeMath for uint256;
 
@@ -44,6 +48,7 @@ contract SmartEscrow is Ownable{
         totalDeposit = totalDeposit.sub(unitPrice);
         payee.transfer(unitPrice);
     }
+
     //payeeによる引き出しを許可する関数
     function allowWithdrawal(address payee) public onlyOwner{
         isWithdrawalAllowed[payee] = true;

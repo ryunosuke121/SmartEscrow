@@ -1,5 +1,7 @@
 const SmartEscrowContract = artifacts.require("SmartEscrow");
-
+/**
+ * スマートエスクローのテストファイル
+ */
 contract("SmartEscrow", (accounts) => {
     let smartEscrow;
     const unitPrice = web3.utils.toWei('0.3');
@@ -8,7 +10,7 @@ contract("SmartEscrow", (accounts) => {
     const url = "beneficiaryname.org";
     const owner = accounts[0];
     const payee = accounts[1];
-
+//正しくコントラクトが初期化できているかのテスト
     describe("initialization", () => {
 
         beforeEach(async () => {
@@ -41,11 +43,11 @@ contract("SmartEscrow", (accounts) => {
         });
 
     });
-
+    //コントラクトにデポジットを預け入れることができるかのテスト
     describe("make deposits", () => {
         
         const value = web3.utils.toWei('2.5');
-
+        //totalDepositが増えるかのテスト
         it("increase the totalDeposit amount", async () => {
             const currentDeposit = await smartEscrow.totalDeposit();
             await smartEscrow.makeDeposit({
@@ -57,9 +59,9 @@ contract("SmartEscrow", (accounts) => {
             assert.equal(diff, value, "diff should match");
         });
     });
-
+    //デポジットから許可されたpayeeのみがunitPrice分引き出すことができるかをテスト
     describe("withdraw unitPrice from deposit", () => {
-
+        //許可されていないアドレスに対してエラーを投げる
         it("throws error when payee is not allowed", async () => {
             try{
                 await smartEscrow.withdraw(payee,{from: owner});
@@ -70,13 +72,13 @@ contract("SmartEscrow", (accounts) => {
                 assert.equal(actualError, expectedError, "should not be withdrawn");
             }
         });
-
+        //payeeアドレスに対して引き出しを許可する。
         it("allow withdrawal from payee", async () => {
             await smartEscrow.allowWithdrawal(payee, {from: owner});
             const isWithdrawalAllowed = await smartEscrow.isWithdrawalAllowed(payee);
             assert.equal(isWithdrawalAllowed, true, "should be true");
         });
-
+        //許可されたpayeeが単価を引き出すことができるかをテスト
         it("withdraw unitPrice", async () => {
             const currentPayeeBalance = await web3.eth.getBalance(payee);
             //{from:payee}とすると、ガス代の支払い元がpayeeになるので、一致しなくなる
@@ -85,7 +87,7 @@ contract("SmartEscrow", (accounts) => {
             const diffPayeeBalance = newPayeeBalance - currentPayeeBalance;
             assert.equal(unitPrice, diffPayeeBalance, "should match");
         });
-
+        //コントラクトのtotalDepositから引き出された分だけ減らされているかをテスト
         it("subtract unitPrice from totalDeposit", async () => {
             await smartEscrow.allowWithdrawal(payee, {from: owner});
             const currentTotalDeposit = await smartEscrow.totalDeposit();
